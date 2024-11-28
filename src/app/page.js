@@ -1,95 +1,156 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+import {
+  useDisclosure,
+  useBreakpointValue,
+  useClipboard,
+  useMediaQuery,
+  useTheme,
+  useToken,
+  useColorMode,
+  useColorModeValue,
+  Button,
+  Text,
+  Box,
+  useToast,
+  Input,
+} from "@chakra-ui/react";
+
+const HooksExample = () => {
+  // Control de apertura/cierre (useDisclosure)
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  // Tamaño responsivo (useBreakpointValue)
+  const buttonSize = useBreakpointValue({ base: "sm", md: "md" });
+
+  // Copiar texto al portapapeles (useClipboard)
+  const { onCopy, hasCopied } = useClipboard("HOLI");
+  
+  // Mostrar un toast cuando se copie el texto
+  const toast = useToast();
+  
+  // Valor para mostrar en el cuadro de texto (Input)
+  const [copiedText, setCopiedText] = useState("");
+
+  const handleCopy = () => {
+    onCopy();
+    toast({
+      title: "HOLI",
+      description: "El texto se ha copiado al portapapeles.",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setCopiedText(text);
+      toast({
+        title: "Texto pegado",
+        description: "El texto se ha pegado desde el portapapeles.",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo leer el portapapeles.",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Media query personalizada (useMediaQuery)
+  const [isLargeScreen] = useMediaQuery("(min-width: 768px)");
+
+  // Tema actual (useTheme)
+  const theme = useTheme();
+  const currentColor = theme.colors.green[500]; // Ejemplo de uso de color desde el tema
+
+  // Uso de tokens de color (useToken)
+  const [primaryColor] = useToken("colors", ["green.500"]);
+
+  // Cambio entre modo claro/oscuro (useColorMode)
+  const { colorMode, toggleColorMode } = useColorMode();
+  const textColor = useColorModeValue("black", "white");
+  const bgColor = useColorModeValue("gray.100", "gray.800");
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Box p={4}>
+      {/* Muestra un botón que cambia según el tamaño de la pantalla */}
+      <Button size={buttonSize} onClick={onOpen}>
+        {isLargeScreen ? "Pantalla Grande" : "Pantalla Pequeña"}
+      </Button>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Modal de ejemplo usando useDisclosure */}
+      {isOpen && (
+        <Box
+          p={5}
+          bg="teal.500"
+          color="white"
+          mt={4}
+          borderRadius="md"
+          boxShadow="md"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <Text>Este es un modal que puedes abrir o cerrar.</Text>
+          <Button onClick={onClose}>Cerrar</Button>
+        </Box>
+      )}
+
+      {/* Copiar al portapapeles useClipboard*/}
+      <Button
+        mt={4}
+        colorScheme="teal"
+        onClick={handleCopy}
+        isDisabled={hasCopied}
+      >
+        {hasCopied ? "Texto Copiado!" : "Copiar Texto"}
+      </Button>
+
+      {/* Cuadro de texto para pegar el contenido copiado */}
+      <Box mt={4}>
+        <Text mb={2}>Texto copiado al portapapeles:</Text>
+        <Input
+          value={copiedText}
+          readOnly
+          placeholder="Introduzca el texto copiado"
+        />
+      </Box>
+
+      {/* Botón para pegar el texto desde el portapapeles */}
+      <Button mt={4} colorScheme="teal" onClick={handlePaste}>
+        Pegar Texto
+      </Button>
+
+      {/* Muestra el tema actual (useTheme)*/}
+      <Box mt={4}>
+        <Text fontSize="xl" color={textColor}>
+          El color de tema actual es {currentColor}
+        </Text>
+      </Box>
+
+      {/* Uso de token de color (useTheme) */}
+      <Box mt={4} p={4} bg={primaryColor} color="white">
+        <Text>Este fondo usa un color del tema: {primaryColor}</Text>
+      </Box>
+
+      {/* Cambio entre modo claro/oscuro */}
+      <Box mt={4} p={4} bg={bgColor} color={textColor}>
+        <Text>
+          El modo actual es: {colorMode === "light" ? "Modo Claro" : "Modo Oscuro"}
+        </Text>
+        <Button mt={2} onClick={toggleColorMode}>
+          Cambiar a {colorMode === "light" ? "Oscuro" : "Claro"}
+        </Button>
+      </Box>
+    </Box>
   );
-}
+};
+
+export default HooksExample;
